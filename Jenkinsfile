@@ -39,13 +39,15 @@ pipeline {
         }
 
         stage('Email Archive') {
-            emailext attachLog: true,
-                    attachmentsPattern: 'app/build/outputs/apk/debug/*.apk',
-                    body: '${date}-${suiteRunId}',
-                    compressLog: true,
-                    replyTo: 'jenkins-ci@ci-server.com',
-                    subject: 'Build ',
-                    to: 'andrew.christoandrew.christo@gmail.com'
+            steps{
+                emailext attachLog: true,
+                        attachmentsPattern: 'app/build/outputs/apk/debug/*.apk',
+                        body: '${date}-${suiteRunId}',
+                        compressLog: true,
+                        replyTo: 'jenkins-ci@ci-server.com',
+                        subject: 'Build ',
+                        to: 'andrew.christoandrew.christo@gmail.com'
+            }
         }
     }
 
