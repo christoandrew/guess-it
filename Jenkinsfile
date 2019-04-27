@@ -9,39 +9,31 @@ pipeline {
         // Mark the code checkout 'stage'....
         stage('Stage Checkout') {
             steps {
-                step('Checking out from source control') {
-                    // Checkout code from repository and update any submodules
-                    checkout scm
-                    sh 'git submodule update --init'
-                }
+                // Checkout code from repository and update any submodules
+                checkout scm
+                sh 'git submodule update --init'
             }
         }
 
         stage('Stage Build') {
             steps {
-                step('Selecting flavor'){
-                    //branch name from Jenkins environment variables
-                    // echo "My branch is: ${env.BRANCH_NAME}"
-                    script {
-                        echo "Building flavor ${flavor}"
-                    }
+                //branch name from Jenkins environment variables
+                // echo "My branch is: ${env.BRANCH_NAME}"
+                script {
+                    echo "Building flavor ${flavor}"
+                }
+                script {
+                    //build your gradle flavor, passes the current build number as a parameter to gradle
+                    sh "./gradlew clean assembleDebug -PBUILD_NUMBER=${date}-${suiteRunId}"
                 }
 
-                step ('Running build'){
-                    script {
-                        //build your gradle flavor, passes the current build number as a parameter to gradle
-                        sh "./gradlew clean assembleDebug -PBUILD_NUMBER=${date}-${suiteRunId}"
-                    }
-                }
             }
         }
 
         stage('Stage Archive') {
             //tell Jenkins to archive the apks
             steps {
-                step('Arrchiving artifact') {
-                    archiveArtifacts artifacts: 'app/build/outputs/apk/*.apk', fingerprint: true
-                }
+                archiveArtifacts artifacts: 'app/build/outputs/apk/*.apk', fingerprint: true
             }
         }
     }
