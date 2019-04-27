@@ -30,6 +30,12 @@ pipeline {
             }
         }
 
+        stage("Stage Test") {
+            steps {
+                sh './gradlew check'
+            }
+        }
+
         stage('Stage Archive') {
             //tell Jenkins to archive the apks
 
@@ -38,8 +44,8 @@ pipeline {
             }
         }
 
-        stage('Email Archive') {
-            steps{
+        stage('Stage Email Archive') {
+            steps {
                 emailext attachLog: true,
                         attachmentsPattern: 'app/build/outputs/apk/debug/*.apk',
                         body: '${date}-${suiteRunId}',
