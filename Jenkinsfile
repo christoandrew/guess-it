@@ -33,7 +33,7 @@ pipeline {
         stage('Stage Archive') {
             //tell Jenkins to archive the apks
             steps {
-                archiveArtifacts artifacts: 'app/build/outputs/apk/*.apk', fingerprint: true
+                archiveArtifacts artifacts: 'app/build/outputs/apk/**/*.apk', fingerprint: true
             }
         }
     }
