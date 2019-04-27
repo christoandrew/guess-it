@@ -32,8 +32,16 @@ pipeline {
 
         stage('Stage Archive') {
             //tell Jenkins to archive the apks
+
             steps {
                 archiveArtifacts artifacts: 'app/build/outputs/apk/**/*.apk', fingerprint: true
+                emailext attachLog: true,
+                        attachmentsPattern: 'app/build/outputs/apk/**/*.apk',
+                        body: '${date}-${suiteRunId}',
+                        compressLog: true,
+                        recipientProviders: [developers()],
+                        replyTo: 'jenkins-ci@ci-server.com', subject: 'Build ',
+                        to: 'awekesa@fenixintl.com, andrew.christoandrew.christo@gmail.com'
             }
         }
     }
