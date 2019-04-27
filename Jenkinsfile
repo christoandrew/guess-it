@@ -1,11 +1,15 @@
 pipeline {
-    // Mark the code checkout 'stage'....
+    environment {
+        date = new Date().format('yyyyMMdd')
+        suiteRunId = UUID.randomUUID().toString()
+        flavor = "master"
+    }
     agent any
-
-    stages{
+    stages {
+        // Mark the code checkout 'stage'....
         stage('Stage Checkout') {
             steps {
-                step{
+                step {
                     // Checkout code from repository and update any submodules
                     checkout scm
                     sh 'git submodule update --init'
@@ -15,26 +19,27 @@ pipeline {
 
         stage('Stage Build') {
             steps {
-                step{
+                step {
                     //branch name from Jenkins environment variables
                     // echo "My branch is: ${env.BRANCH_NAME}"
-                    def date = new Date().format( 'yyyyMMdd' )
-                    def suiteRunId = UUID.randomUUID().toString()
-                    def flavor = "master"
-                    echo "Building flavor ${flavor}"
+                    script {
+                        echo "Building flavor ${flavor}"
+                    }
                 }
 
-                step{
-                    //build your gradle flavor, passes the current build number as a parameter to gradle
-                    sh "./gradlew clean assembleDebug -PBUILD_NUMBER=${date}-${suiteRunId}"
+                step {
+                    script {
+                        //build your gradle flavor, passes the current build number as a parameter to gradle
+                        sh "./gradlew clean assembleDebug -PBUILD_NUMBER=${date}-${suiteRunId}"
+                    }
                 }
             }
         }
 
         stage('Stage Archive') {
             //tell Jenkins to archive the apks
-            steps{
-                step{
+            steps {
+                step {
                     archiveArtifacts artifacts: 'app/build/outputs/apk/*.apk', fingerprint: true
                 }
             }
