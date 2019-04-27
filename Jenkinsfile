@@ -35,14 +35,17 @@ pipeline {
 
             steps {
                 archiveArtifacts artifacts: 'app/build/outputs/apk/**/*.apk', fingerprint: true
-                emailext attachLog: true,
-                        attachmentsPattern: 'app/build/outputs/apk/**/*.apk',
-                        body: '${date}-${suiteRunId}',
-                        compressLog: true,
-                        recipientProviders: [developers()],
-                        replyTo: 'jenkins-ci@ci-server.com', subject: 'Build ',
-                        to: 'awekesa@fenixintl.com, andrew.christoandrew.christo@gmail.com'
             }
+        }
+
+        stage('Email Archive') {
+            emailext attachLog: true,
+                    attachmentsPattern: 'app/build/outputs/apk/debug/*.apk',
+                    body: '${date}-${suiteRunId}',
+                    compressLog: true,
+                    replyTo: 'jenkins-ci@ci-server.com',
+                    subject: 'Build ',
+                    to: 'andrew.christoandrew.christo@gmail.com'
         }
     }
 
