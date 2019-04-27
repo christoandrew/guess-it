@@ -5,30 +5,38 @@ pipeline {
     stages{
         stage('Stage Checkout') {
             steps {
-                // Checkout code from repository and update any submodules
-                checkout scm
-                sh 'git submodule update --init'
+                step{
+                    // Checkout code from repository and update any submodules
+                    checkout scm
+                    sh 'git submodule update --init'
+                }
             }
         }
 
         stage('Stage Build') {
             steps {
-                //branch name from Jenkins environment variables
-                // echo "My branch is: ${env.BRANCH_NAME}"
-                def date = new Date().format( 'yyyyMMdd' )
-                def suiteRunId = UUID.randomUUID().toString()
-                def flavor = "master"
-                echo "Building flavor ${flavor}"
+                step{
+                    //branch name from Jenkins environment variables
+                    // echo "My branch is: ${env.BRANCH_NAME}"
+                    def date = new Date().format( 'yyyyMMdd' )
+                    def suiteRunId = UUID.randomUUID().toString()
+                    def flavor = "master"
+                    echo "Building flavor ${flavor}"
+                }
 
-                //build your gradle flavor, passes the current build number as a parameter to gradle
-                sh "./gradlew clean assembleDebug -PBUILD_NUMBER=${date}-${suiteRunId}"
+                step{
+                    //build your gradle flavor, passes the current build number as a parameter to gradle
+                    sh "./gradlew clean assembleDebug -PBUILD_NUMBER=${date}-${suiteRunId}"
+                }
             }
         }
 
         stage('Stage Archive') {
             //tell Jenkins to archive the apks
             steps{
-                archiveArtifacts artifacts: 'app/build/outputs/apk/*.apk', fingerprint: true
+                step{
+                    archiveArtifacts artifacts: 'app/build/outputs/apk/*.apk', fingerprint: true
+                }
             }
         }
     }
