@@ -48,8 +48,8 @@ pipeline {
         stage('Stage Email Archive') {
             steps {
                 emailext attachLog: true,
-                        attachmentsPattern: 'app/build/outputs/apk/debug/*.apk',
-                        body: '${date}-${suiteRunId}',
+                        //attachmentsPattern: 'app/build/outputs/apk/debug/*.apk',
+                        body: "${date}-${suiteRunId}",
                         compressLog: true,
                         replyTo: 'jenkins-ci@ci-server.com',
                         subject: 'Build ',
@@ -59,12 +59,14 @@ pipeline {
 
         stage('Deploy') {
             steps {
+                milestone()
                 input {
                     message 'Deploy?'
                     id $ {
                         UUID.randomUUID().toString()
                         ok 'Approve'
                         submitter '*'
+                        message "Approve build?"
                         submitterParameter 'approved_by'
                     }
                 }
