@@ -1,3 +1,4 @@
+#!groovy​
 pipeline {
     environment {
         date = new Date().format('yyyyMMdd')
@@ -53,6 +54,16 @@ pipeline {
                         replyTo: 'jenkins-ci@ci-server.com',
                         subject: 'Build ',
                         to: 'andrew.christoandrew.christo@gmail.com'
+            }
+        }
+
+        stage('Deploy') {
+            input "Deploy?"
+            milestone()
+            lock('Deployment') {
+                node {
+                    echo "Deploying"
+                }
             }
         }
     }
