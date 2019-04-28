@@ -61,12 +61,11 @@ pipeline {
             steps {
                 milestone()
                 input {
-                    message 'Deploy?'
+                    message: 'Deploy?'
                     id $ {
                         UUID.randomUUID().toString()
                         ok 'Approve'
                         submitter '*'
-                        message "Approve build?"
                         submitterParameter 'approved_by'
                     }
                 }
