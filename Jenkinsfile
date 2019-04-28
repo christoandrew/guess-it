@@ -58,11 +58,13 @@ pipeline {
         }
 
         stage('Deploy') {
-            input "Deploy?"
-            milestone()
-            lock('Deployment') {
-                node {
-                    echo "Deploying"
+            steps{
+                input "Deploy?"
+                milestone()
+                lock('Deployment') {
+                    node {
+                        echo "Deploying"
+                    }
                 }
             }
         }
