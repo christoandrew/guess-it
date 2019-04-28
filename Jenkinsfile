@@ -58,13 +58,19 @@ pipeline {
         }
 
         stage('Deploy') {
-            steps{
-                input "Deploy?"
+            steps {
+                input {
+                    message 'Deploy?'
+                    id $ {
+                        UUID.randomUUID().toString()
+                        ok 'Approve'
+                        submitter '*'
+                        submitterParameter 'approved_by'
+                    }
+                }
                 milestone()
                 lock('Deployment') {
-                    node {
-                        echo "Deploying"
-                    }
+                    echo "Deploying"
                 }
             }
         }
