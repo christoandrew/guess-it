@@ -60,7 +60,6 @@ pipeline {
         stage('Deploy') {
             steps {
                 input message: "Deploy?"
-                milestone()
                 echo "Deploying"
             }
         }
