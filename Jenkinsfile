@@ -19,14 +19,15 @@ pipeline {
         stage('Stage Checkout') {
             steps {
                 // Checkout code from repository and update any submodules
-                checkout([$class: 'GitSCM',
-                          branches: [[name: "${params.BRANCH}"]],
-                          doGenerateSubmoduleConfigurations: false,
-                          extensions: [],
-                          gitTool: 'Default',
-                          submoduleCfg: [],
-                          userRemoteConfigs: [[url: 'https://github.com/christoandrew/guess-it.git']]
-                        ])
+                //checkout([$class: 'GitSCM',
+                //          branches: [[name: "${params.BRANCH}"]],
+                //          doGenerateSubmoduleConfigurations: false,
+                //          extensions: [],
+                //          gitTool: 'Default',
+                //          submoduleCfg: [],
+                //          userRemoteConfigs: [[url: 'https://github.com/christoandrew/guess-it.git']]
+                //        ])
+                checkout scm
                 sh 'git submodule update --init'
             }
         }
@@ -36,9 +37,9 @@ pipeline {
                 //branch name from Jenkins environment variables
                 // echo "My branch is: ${env.BRANCH_NAME}"
                 script {
-                    echo "Building build type ${BUILD TYPE}"
+                    echo "Building build type ${BUILD_TYPE}"
                     echo "Building flavor ${BRANCH}"
-                    echo "Building flavor ${BUILD FLAVOR}"
+                    echo "Building flavor ${BUILD_FLAVOR}"
                 }
                 script {
                     //build your gradle flavor, passes the current build number as a parameter to gradle
