@@ -19,15 +19,15 @@ pipeline {
         stage('Stage Checkout') {
             steps {
                 // Checkout code from repository and update any submodules
-                //checkout([$class: 'GitSCM',
-                //          branches: [[name: "${params.BRANCH}"]],
-                //          doGenerateSubmoduleConfigurations: false,
-                //          extensions: [],
-                //          gitTool: 'Default',
-                //          submoduleCfg: [],
-                //          userRemoteConfigs: [[url: 'https://github.com/christoandrew/guess-it.git']]
-                //        ])
-                checkout scm
+                checkout([$class: 'GitSCM',
+                          branches: [[name: "${BRANCH}"]],
+                          doGenerateSubmoduleConfigurations: false,
+                          extensions: [],
+                          gitTool: 'Default',
+                          submoduleCfg: [],
+                          userRemoteConfigs: [[url: 'https://github.com/christoandrew/guess-it.git']]
+                        ])
+                //checkout scm
                 sh 'git submodule update --init'
             }
         }
