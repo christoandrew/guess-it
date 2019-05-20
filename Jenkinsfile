@@ -43,7 +43,7 @@ pipeline {
                 }
                 script {
                     //build your gradle flavor, passes the current build number as a parameter to gradle
-                    sh "./gradlew clean assembleDebug -PBUILD_NUMBER=${date}-${suiteRunId}"
+                    sh "./gradlew clean buildFlavor(${BUILD_TYPE}) -PBUILD_NUMBER=${date}-${suiteRunId}"
                 }
 
             }
@@ -93,4 +93,21 @@ def flavor(branchName) {
     def matcher = (env.BRANCH_NAME =~ /MOB_([a-z_]+)/)
     assert matcher.matches()
     matcher[0][1]
+}
+
+@NonCPS
+def buildFlavor(buidlType){
+    String flavor = "assembleDebug"
+    switch(buildType){
+      case "debug":
+        flavor = "assembleDebug"
+        break
+      case "release":
+        flavor = "assembleRelease"
+        break
+      default:
+        break
+    }
+    
+    return result.toString()
 }
