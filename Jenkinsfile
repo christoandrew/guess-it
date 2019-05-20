@@ -43,7 +43,7 @@ pipeline {
                 }
                 script {
                     //build your gradle flavor, passes the current build number as a parameter to gradle
-                    sh "./gradlew clean buildFlavor(${BUILD_TYPE}) -PBUILD_NUMBER=${date}-${suiteRunId}"
+                    sh "./gradlew clean "+ buildFlavor(${BUILD_TYPE}) + "-PBUILD_NUMBER=${date}-${suiteRunId}"
                 }
 
             }
