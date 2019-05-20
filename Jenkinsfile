@@ -36,13 +36,11 @@ pipeline {
             steps {
                 //branch name from Jenkins environment variables
                 // echo "My branch is: ${env.BRANCH_NAME}"
-                def flavor = buildFlavor(params.BUILD_TYPE)
                 script {
+                    def flavor = buildFlavor(params.BUILD_TYPE)
                     echo "Building build type ${BUILD_TYPE}"
                     echo "Building flavor ${BRANCH}"
                     echo "Building flavor ${flavor}"
-                }
-                script {
                     //build your gradle flavor, passes the current build number as a parameter to gradle
                     sh "./gradlew clean ${flavor} -PBUILD_NUMBER=${date}-${suiteRunId}"
                 }
