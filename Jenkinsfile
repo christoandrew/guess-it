@@ -109,5 +109,5 @@ def buildFlavor(buidlType){
         break
     }
     
-    return result.toString()
+    return flavor.toString()
 }
