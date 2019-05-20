@@ -95,7 +95,7 @@ def flavor(branchName) {
 }
 
 @NonCPS
-def buildFlavor(buidlType){
+def buildFlavor(buildType){
     String flavor = "assembleDebug"
     switch(buildType){
       case "debug":
