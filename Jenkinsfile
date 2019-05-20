@@ -5,13 +5,28 @@ pipeline {
         suiteRunId = UUID.randomUUID().toString()
         flavor = "master"
     }
+    
     agent any
+    
+    parameters {
+        gitParameter name: 'BRANCH',
+                     type: 'PT_BRANCH',
+                     defaultValue: 'master'
+    }
+    
     stages {
         // Mark the code checkout 'stage'....
         stage('Stage Checkout') {
             steps {
                 // Checkout code from repository and update any submodules
-                checkout scm
+                checkout([$class: 'GitSCM',
+                          branches: [[name: "${params.BRANCH}"]],
+                          doGenerateSubmoduleConfigurations: false,
+                          extensions: [],
+                          gitTool: 'Default',
+                          submoduleCfg: [],
+                          userRemoteConfigs: [[url: 'https://github.com/christoandrew/guess-it.git']]
+                        ])
                 sh 'git submodule update --init'
             }
         }
@@ -21,7 +36,9 @@ pipeline {
                 //branch name from Jenkins environment variables
                 // echo "My branch is: ${env.BRANCH_NAME}"
                 script {
-                    echo "Building flavor ${flavor}"
+                    echo "Building build type ${BUILD TYPE}"
+                    echo "Building flavor ${BRANCH}"
+                    echo "Building flavor ${BUILD FLAVOR}"
                 }
                 script {
                     //build your gradle flavor, passes the current build number as a parameter to gradle
