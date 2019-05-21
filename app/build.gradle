@@ -53,6 +53,8 @@ def getMasterCommitCount = { ->
 }
 
 def getVersionName = { ->
+
+    print(getArtifactName())
     try {
         def stdout = new ByteArrayOutputStream()
         exec {
@@ -81,6 +83,8 @@ android {
         versionCode LEGACY_BUILD_NUMBER_OFFSET + getMasterCommitCount()
         versionName getVersionName()
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        archivesBaseName = 'fenixGo'
+
     }
     buildTypes {
         release {
@@ -88,11 +92,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
 
-        trainRelease{
+        trainRelease {
             initWith release
         }
 
-        trainDebug{
+        trainDebug {
             initWith debug
         }
     }
@@ -100,18 +104,22 @@ android {
     // https://stackoverflow.com/a/27119543/152938
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            outputFileName = new File(outputFileName.replace(".apk", "-${defaultConfig.versionName}.apk"))
+            outputFileName = new File(outputFileName.replace(".apk", "-${getArtifactName()}.apk"))
         }
     }
     testVariants.all { variant ->
         variant.outputs.all { output ->
-            outputFileName = new File(outputFileName.replace(".apk", "-${defaultConfig.versionName}.apk"))
+            outputFileName = new File(outputFileName.replace(".apk", "-${getArtifactName()}.apk"))
         }
     }
 
     dataBinding {
         enabled = true
     }
+}
+
+def getArtifactName() {
+    return "${System.getenv('PR')}-${System.getenv('BUILD')}-${System.getenv('DATE')}"
 }
 
 dependencies {

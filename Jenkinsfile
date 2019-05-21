@@ -46,9 +46,9 @@ pipeline {
                 // echo "My branch is: ${env.BRANCH_NAME}"
                 script {
                     def flavor = buildFlavor(params.BUILD_TYPE)
-
+                    def pr = "pr/${params.PULL_REQUESTS}/head"
                     //build your gradle flavor, passes the current build number as a parameter to gradle
-                    sh "./gradlew clean ${flavor} -PBUILD_NUMBER=${date}-${suiteRunId}"
+                    sh "PR=${pr} BUILD=${BUILD_NUMBER} DATE=${date} ./gradlew clean ${flavor} -PBUILD_NUMBER=${suiteRunId}"
                 }
 
             }
