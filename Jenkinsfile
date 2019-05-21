@@ -5,42 +5,36 @@ pipeline {
         suiteRunId = UUID.randomUUID().toString()
         flavor = "master"
     }
-    
+
     agent any
-    
-    parameters {[
-        
-        gitParameter(branch: '',
-                     branchFilter: 'origin/(.*)',
-                     defaultValue: 'master',
-                     description: '',
-                     name: 'BRANCH',
-                     quickFilterEnabled: false,
-                     selectedValue: 'NONE',
-                     sortMode: 'NONE',
-                     tagFilter: '*',
-                     type: 'PT_BRANCH'),
-        choice(name: "BUILD_TYPE",
-               choices: "debug\nrelease"),
-        choice(name: "BUILD_FLAVOR", 
-               choices: "dev\ntrain\nproduction"
-            
-    ]}
-    
+
+    parameters {
+        [
+
+                gitParameter(name: 'PULL_REQUESTS',
+                        type: 'PT_PULL_REQUEST',
+                        defaultValue: '1',
+                        sortMode: 'DESCENDING_SMART'),
+
+                choice(name: "BUILD_TYPE",
+                        choices: "debug\nrelease\ntrainDebug\ntrainRelease\n"),
+
+        ]
+    }
+
     stages {
         // Mark the code checkout 'stage'....
         stage('Stage Checkout') {
             steps {
                 // Checkout code from repository and update any submodules
-                checkout([$class: 'GitSCM',
-                          branches: [[name: "${BRANCH}"]],
+                checkout([$class                           : 'GitSCM',
+                          branches                         : [[name: "pr/${params.PULL_REQUESTS}/head"]],
                           doGenerateSubmoduleConfigurations: false,
-                          extensions: [],
-                          gitTool: 'Default',
-                          submoduleCfg: [],
-                          userRemoteConfigs: [[url: 'https://github.com/christoandrew/guess-it.git']]
-                        ])
-                //checkout scm
+                          extensions                       : [],
+                          gitTool                          : 'Default',
+                          submoduleCfg                     : [],
+                          userRemoteConfigs                : [[refspec: '+refs/pull/*:refs/remotes/origin/pr/*', url: 'https://github.com/christoandrew/guess-it.git']]])
+
                 sh 'git submodule update --init'
             }
         }
@@ -51,9 +45,7 @@ pipeline {
                 // echo "My branch is: ${env.BRANCH_NAME}"
                 script {
                     def flavor = buildFlavor(params.BUILD_TYPE)
-                    echo "Building build type ${BUILD_TYPE}"
-                    echo "Building branch ${BRANCH}"
-                    echo "Building flavor ${flavor}"
+
                     //build your gradle flavor, passes the current build number as a parameter to gradle
                     sh "./gradlew clean ${flavor} -PBUILD_NUMBER=${date}-${suiteRunId}"
                 }
@@ -89,7 +81,6 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                input message: "Deploy?"
                 echo "Deploying"
             }
         }
@@ -108,18 +99,24 @@ def flavor(branchName) {
 }
 
 @NonCPS
-def buildFlavor(buildType){
+def buildFlavor(buildType) {
     String flavor = "assembleDebug"
-    switch(buildType){
-      case "debug":
-        flavor = "assembleDebug"
-        break
-      case "release":
-        flavor = "assembleRelease"
-        break
-      default:
-        break
+    switch (buildType) {
+        case "debug":
+            flavor = "assembleDebug"
+            break
+        case "release":
+            flavor = "assembleRelease"
+            break
+        case "trainRelease":
+            flavor = "assembleTrainRelease"
+            break
+        case "trainDebug":
+            flavor = "assembleTrainDebug"
+            break
+        default:
+            break
     }
-    
+
     return flavor.toString()
 }
