@@ -34,13 +34,13 @@ pipeline {
                     echo "Git branch: ${GIT_BRANCH_LOCAL}"
 
                     script {
-                        if (env.BRANCH_NAME.startsWith('PR')) {
-                            displayName = "#${env.BUILD_NUMBER} - ${env.CHANGE_BRANCH}"
-                        } else {
-                            displayName = "#${env.BUILD_NUMBER} - ${env.BRANCH_NAME}"
-                        }
+//                        if (env.BRANCH_NAME.startsWith('PR')) {
+//                            displayName = "#${env.BUILD_NUMBER} - ${env.CHANGE_BRANCH}"
+//                        } else {
+//                            displayName = "#${env.BUILD_NUMBER} - ${env.BRANCH_NAME}"
+//                        }
 
-                        echo "Display name $displayName"
+                        echo "Display name $CHANGE_BRANCH"
                     }
                 }
 
