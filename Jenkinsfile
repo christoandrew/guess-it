@@ -5,13 +5,33 @@ pipeline {
         suiteRunId = UUID.randomUUID().toString()
         flavor = "master"
     }
+
     agent any
+
+    parameters {
+
+                gitParameter(name: 'PULL_REQUESTS',
+                        type: 'PT_PULL_REQUEST',
+                        defaultValue: '1',
+                        sortMode: 'DESCENDING_SMART')
+
+                choice(name: "BUILD_TYPE",
+                        choices: "debug\nrelease\ntrainDebug\ntrainRelease\n")
+    }
+
     stages {
         // Mark the code checkout 'stage'....
         stage('Stage Checkout') {
             steps {
                 // Checkout code from repository and update any submodules
-                checkout scm
+                checkout([$class                           : 'GitSCM',
+                          branches                         : [[name: "pr/${params.PULL_REQUESTS}/head"]],
+                          doGenerateSubmoduleConfigurations: false,
+                          extensions                       : [],
+                          gitTool                          : 'Default',
+                          submoduleCfg                     : [],
+                          userRemoteConfigs                : [[refspec: '+refs/pull/*:refs/remotes/origin/pr/*', url: 'https://github.com/christoandrew/guess-it.git']]])
+
                 sh 'git submodule update --init'
             }
         }
@@ -21,11 +41,10 @@ pipeline {
                 //branch name from Jenkins environment variables
                 // echo "My branch is: ${env.BRANCH_NAME}"
                 script {
-                    echo "Building flavor ${flavor}"
-                }
-                script {
+                    def flavor = buildFlavor(params.BUILD_TYPE)
+
                     //build your gradle flavor, passes the current build number as a parameter to gradle
-                    sh "./gradlew clean assembleDebug -PBUILD_NUMBER=${date}-${suiteRunId}"
+                    sh "./gradlew clean ${flavor} -PBUILD_NUMBER=${date}-${suiteRunId}"
                 }
 
             }
@@ -59,7 +78,6 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                input message: "Deploy?"
                 echo "Deploying"
             }
         }
@@ -75,4 +93,27 @@ def flavor(branchName) {
     def matcher = (env.BRANCH_NAME =~ /MOB_([a-z_]+)/)
     assert matcher.matches()
     matcher[0][1]
+}
+
+@NonCPS
+def buildFlavor(buildType) {
+    String flavor = "assembleDebug"
+    switch (buildType) {
+        case "debug":
+            flavor = "assembleDebug"
+            break
+        case "release":
+            flavor = "assembleRelease"
+            break
+        case "trainRelease":
+            flavor = "assembleTrainRelease"
+            break
+        case "trainDebug":
+            flavor = "assembleTrainDebug"
+            break
+        default:
+            break
+    }
+
+    return flavor.toString()
 }
