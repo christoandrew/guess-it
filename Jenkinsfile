@@ -25,24 +25,6 @@ pipeline {
         stage('Stage Checkout') {
             steps {
                 // Checkout code from repository and update any submodules
-                script{
-                    def branches = "pr/${params.PULL_REQUESTS}/head"
-                    GIT_BRANCH_LOCAL = sh (
-                            script: "echo $branches | sed -e 's|origin/||g'",
-                            returnStdout: true
-                    ).trim()
-                    echo "Git branch: ${GIT_BRANCH_LOCAL}"
-
-                    script {
-//                        if (env.BRANCH_NAME.startsWith('PR')) {
-//                            displayName = "#${env.BUILD_NUMBER} - ${env.CHANGE_BRANCH}"
-//                        } else {
-//                            displayName = "#${env.BUILD_NUMBER} - ${env.BRANCH_NAME}"
-//                        }
-
-                        echo "Display name ${GIT_LOCAL_BRANCH}"
-                    }
-                }
 
                 script{
                     checkout([$class                           : 'GitSCM',
