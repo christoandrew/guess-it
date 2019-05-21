@@ -9,15 +9,15 @@ pipeline {
 
     parameters {
 
-                gitParameter(name: 'PULL_REQUESTS',
-                        type: 'PT_PULL_REQUEST',
-                        defaultValue: '1',
-                        description: 'SELECT PR TO BUILD',
-                        sortMode: 'DESCENDING_SMART')
+        gitParameter(name: 'PULL_REQUESTS',
+                type: 'PT_PULL_REQUEST',
+                defaultValue: '1',
+                description: 'SELECT PR TO BUILD',
+                sortMode: 'DESCENDING_SMART')
 
-                choice(name: "BUILD_TYPE",
-                        description: "SELECT BUILD TYPE",
-                        choices: "debug\nrelease\ntrainDebug\ntrainRelease\n")
+        choice(name: "BUILD_TYPE",
+                description: "SELECT BUILD TYPE",
+                choices: "debug\nrelease\ntrainDebug\ntrainRelease\n")
     }
 
     stages {
@@ -26,7 +26,7 @@ pipeline {
             steps {
                 // Checkout code from repository and update any submodules
 
-                script{
+                script {
                     checkout([$class                           : 'GitSCM',
                               branches                         : [[name: "pr/${params.PULL_REQUESTS}/head"]],
                               doGenerateSubmoduleConfigurations: false,
@@ -56,7 +56,7 @@ pipeline {
 
         stage("Stage Test") {
             steps {
-                sh './gradlew check'
+                //sh './gradlew check'
             }
         }
 
@@ -70,13 +70,18 @@ pipeline {
 
         stage('Stage Email Archive') {
             steps {
-                emailext attachLog: true,
-                        //attachmentsPattern: 'app/build/outputs/apk/debug/*.apk',
-                        body: "${date}-${suiteRunId}",
-                        compressLog: true,
-                        replyTo: 'jenkins-ci@ci-server.com',
-                        subject: 'Build ',
-                        to: 'andrew.christoandrew.christo@gmail.com'
+//                emailext attachLog: true,
+//                        //attachmentsPattern: 'app/build/outputs/apk/debug/*.apk',
+//                        body: "${date}-${suiteRunId}",
+//                        compressLog: true,
+//                        replyTo: 'jenkins-ci@ci-server.com',
+//                        subject: 'Build ',
+//                        to: 'andrew.christoandrew.christo@gmail.com'
+                script {
+                    emailext attachLog: true, body: '${BUILD_STATUS}', compressLog: true,
+                            recipientProviders: [culprits(), developers()],
+                            subject: 'Build ${BUILD_NUMBER}', to: 'awekesa@fenixintl.com'
+                }
             }
         }
 
