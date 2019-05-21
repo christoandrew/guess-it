@@ -40,7 +40,7 @@ pipeline {
 //                            displayName = "#${env.BUILD_NUMBER} - ${env.BRANCH_NAME}"
 //                        }
 
-                        echo "Display name ${env.BRANCH_NAME}"
+                        echo "Display name ${GIT_LOCAL_BRANCH}"
                     }
                 }
 
