@@ -9,17 +9,14 @@ pipeline {
     agent any
 
     parameters {
-        [
 
                 gitParameter(name: 'PULL_REQUESTS',
                         type: 'PT_PULL_REQUEST',
                         defaultValue: '1',
-                        sortMode: 'DESCENDING_SMART'),
+                        sortMode: 'DESCENDING_SMART')
 
                 choice(name: "BUILD_TYPE",
-                        choices: "debug\nrelease\ntrainDebug\ntrainRelease\n"),
-
-        ]
+                        choices: "debug\nrelease\ntrainDebug\ntrainRelease\n")
     }
 
     stages {
