@@ -8,11 +8,24 @@ pipeline {
     
     agent any
     
-    parameters {
-        gitParameter name: 'BRANCH',
-                     type: 'PT_BRANCH',
-                     defaultValue: 'master'
-    }
+    parameters {[
+        
+        gitParameter(branch: '',
+                     branchFilter: 'origin/(.*)',
+                     defaultValue: 'master',
+                     description: '',
+                     name: 'BRANCH',
+                     quickFilterEnabled: false,
+                     selectedValue: 'NONE',
+                     sortMode: 'NONE',
+                     tagFilter: '*',
+                     type: 'PT_BRANCH'),
+        choice(name: "BUILD_TYPE",
+               choices: "debug\nrelease"),
+        choice(name: "BUILD_FLAVOR", 
+               choices: "dev\ntrain\nproduction"
+            
+    ]}
     
     stages {
         // Mark the code checkout 'stage'....
@@ -39,7 +52,7 @@ pipeline {
                 script {
                     def flavor = buildFlavor(params.BUILD_TYPE)
                     echo "Building build type ${BUILD_TYPE}"
-                    echo "Building flavor ${BRANCH}"
+                    echo "Building branch ${BRANCH}"
                     echo "Building flavor ${flavor}"
                     //build your gradle flavor, passes the current build number as a parameter to gradle
                     sh "./gradlew clean ${flavor} -PBUILD_NUMBER=${date}-${suiteRunId}"
