@@ -57,6 +57,7 @@ pipeline {
         stage("Stage Test") {
             steps {
                 //sh './gradlew check'
+                print("Stage Test")
             }
         }
 
