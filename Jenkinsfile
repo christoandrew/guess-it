@@ -3,7 +3,6 @@ pipeline {
     environment {
         date = new Date().format('yyyyMMdd')
         suiteRunId = UUID.randomUUID().toString()
-        flavor = "master"
     }
 
     agent any
@@ -13,9 +12,11 @@ pipeline {
                 gitParameter(name: 'PULL_REQUESTS',
                         type: 'PT_PULL_REQUEST',
                         defaultValue: '1',
+                        description: 'SELECT PR TO BUILD',
                         sortMode: 'DESCENDING_SMART')
 
                 choice(name: "BUILD_TYPE",
+                        description: "SELECT BUILD TYPE",
                         choices: "debug\nrelease\ntrainDebug\ntrainRelease\n")
     }
 
@@ -24,15 +25,26 @@ pipeline {
         stage('Stage Checkout') {
             steps {
                 // Checkout code from repository and update any submodules
-                checkout([$class                           : 'GitSCM',
-                          branches                         : [[name: "pr/${params.PULL_REQUESTS}/head"]],
-                          doGenerateSubmoduleConfigurations: false,
-                          extensions                       : [],
-                          gitTool                          : 'Default',
-                          submoduleCfg                     : [],
-                          userRemoteConfigs                : [[refspec: '+refs/pull/*:refs/remotes/origin/pr/*', url: 'https://github.com/christoandrew/guess-it.git']]])
+                script{
+                    def branches = "pr/${params.PULL_REQUESTS}/head"
+                    GIT_BRANCH_LOCAL = sh (
+                            script: "echo $branches | sed -e 's|origin/||g'",
+                            returnStdout: true
+                    ).trim()
+                    echo "Git branch: ${GIT_BRANCH_LOCAL}"
+                }
 
-                sh 'git submodule update --init'
+                script{
+                    checkout([$class                           : 'GitSCM',
+                              branches                         : [[name: "pr/${params.PULL_REQUESTS}/head"]],
+                              doGenerateSubmoduleConfigurations: false,
+                              extensions                       : [],
+                              gitTool                          : 'Default',
+                              submoduleCfg                     : [],
+                              userRemoteConfigs                : [[refspec: '+refs/pull/*:refs/remotes/origin/pr/*', url: 'https://github.com/christoandrew/guess-it.git']]])
+
+                    sh 'git submodule update --init'
+                }
             }
         }
 
