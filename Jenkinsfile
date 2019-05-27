@@ -1,4 +1,4 @@
-#!groovy​
+#!groovy
 pipeline {
     environment {
         date = new Date().format('yyyyMMdd')
@@ -21,34 +21,52 @@ pipeline {
     }
 
     stages {
-        // Mark the code checkout 'stage'....
+
+        stage('Initializing Build') {
+            steps {
+                script {
+                    getPullRequest()
+                    echo sh(returnStdout: true, script: 'env')
+                }
+            }
+        }
+
         stage('Stage Checkout') {
             steps {
                 // Checkout code from repository and update any submodules
 
                 script {
-                    checkout([$class                           : 'GitSCM',
-                              branches                         : [[name: "pr/${params.PULL_REQUESTS}/head"]],
-                              doGenerateSubmoduleConfigurations: false,
-                              extensions                       : [],
-                              gitTool                          : 'Default',
-                              submoduleCfg                     : [],
-                              userRemoteConfigs                : [[refspec: '+refs/pull/*:refs/remotes/origin/pr/*', url: 'https://github.com/christoandrew/guess-it.git']]])
 
-                    sh 'git submodule update --init'
+                    def buildRef = env.pullRequest != null ? "pr/${env.pullRequest}/head" : env.branchName
+
+                    echo "Running build with ${buildRef}"
+
+                    withCredentials([usernamePassword(credentialsId: '3452d8b5-7876-4e02-84f3-53b512a2dc83',
+                            usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+
+                        checkout([$class                           : 'GitSCM',
+                                  branches                         : [[name: "${buildRef}"]],
+                                  doGenerateSubmoduleConfigurations: false,
+                                  extensions                       : [],
+                                  submoduleCfg                     : [],
+                                  userRemoteConfigs                : [[credentialsId: '3452d8b5-7876-4e02-84f3-53b512a2dc83',
+                                                                       refspec      : '+refs/pull/*:refs/remotes/origin/pr/* +refs/heads/*:refs/remotes/origin/*',
+                                                                       url          : 'https://github.com/FenixIntl/FenixGoNative.git']]])
+
+
+                        sh 'git submodule update --init'
+
+                    }
                 }
             }
         }
 
         stage('Stage Build') {
             steps {
-                //branch name from Jenkins environment variables
-                // echo "My branch is: ${env.BRANCH_NAME}"
                 script {
                     def flavor = buildFlavor(params.BUILD_TYPE)
-                    def pr = "pr/${params.PULL_REQUESTS}/head"
                     //build your gradle flavor, passes the current build number as a parameter to gradle
-                    sh "PR=${pr} BUILD=${BUILD_NUMBER} DATE=${date} ./gradlew clean ${flavor} -PBUILD_NUMBER=${suiteRunId}"
+                    sh "PR=${pullRequest} BUILD=${BUILD_NUMBER} DATE=${date} ./gradlew clean ${flavor} -PBUILD_NUMBER=${suiteRunId}"
                 }
 
             }
@@ -62,15 +80,13 @@ pipeline {
         }
 
         stage('Stage Archive') {
-            //tell Jenkins to archive the apks
-
             steps {
                 archiveArtifacts artifacts: 'app/build/outputs/apk/**/*.apk', fingerprint: true
             }
         }
 
-        stage('Stage Email Archive') {
-            steps {
+//        stage('Stage Email Archive') {
+//            steps {
 //                emailext attachLog: true,
 //                        //attachmentsPattern: 'app/build/outputs/apk/debug/*.apk',
 //                        body: "${date}-${suiteRunId}",
@@ -78,32 +94,47 @@ pipeline {
 //                        replyTo: 'jenkins-ci@ci-server.com',
 //                        subject: 'Build ',
 //                        to: 'andrew.christoandrew.christo@gmail.com'
-                script {
-                    emailext attachLog: true, body: '${BUILD_STATUS}', compressLog: true,
-                            recipientProviders: [culprits(), developers()],
-                            subject: 'Build ${BUILD_NUMBER}', to: 'awekesa@fenixintl.com'
-                }
-            }
-        }
+//                script {
+//                    emailext attachLog: true, body: '${BUILD_STATUS}', compressLog: true,
+//                            recipientProviders: [culprits(), developers()],
+//                            subject: 'Build ${BUILD_NUMBER}', to: 'awekesa@fenixintl.com'
+//                }
+//            }
+//        }
 
-        stage('Deploy') {
-            steps {
-                echo "Deploying"
-            }
-        }
+//        stage('Deploy') {
+//            steps {
+//                echo "Deploying"
+//            }
+//        }
     }
 
     //stage 'Stage Upload To Fabric'
     //sh "./gradlew crashlyticsUploadDistribution${flavor}Debug  -PBUILD_NUMBER=${env.BUILD_NUMBER}"
 }
 
-// Pulls the android flavor out of the branch name the branch is prepended with /QA_
-@NonCPS
-def flavor(branchName) {
-    def matcher = (env.BRANCH_NAME =~ /MOB_([a-z_]+)/)
-    assert matcher.matches()
-    matcher[0][1]
+def getPullRequest() {
+    if (isParameterizedBuild() && !isPullRequestBuild() && !isBranchBuild()) {
+        env.pullRequest = params.PULL_REQUESTS
+    } else if (isPullRequestBuild()) {
+        env.branchName = env.GITHUB_PR_SOURCE_BRANCH
+    } else {
+        env.branchName = env.GITHUB_BRANCH_NAME
+    }
 }
+
+def isParameterizedBuild() {
+    return (env.PULL_REQUESTS != null) && (env.BUILD_TYPE != null)
+}
+
+def isPullRequestBuild() {
+    return env.GITHUB_PR_NUMBER != null
+}
+
+def isBranchBuild() {
+    return env.GITHUB_BRANCH_NAME != null
+}
+
 
 @NonCPS
 def buildFlavor(buildType) {
