@@ -51,7 +51,7 @@ pipeline {
                                   submoduleCfg                     : [],
                                   userRemoteConfigs                : [[credentialsId: '3452d8b5-7876-4e02-84f3-53b512a2dc83',
                                                                        refspec      : '+refs/pull/*:refs/remotes/origin/pr/* +refs/heads/*:refs/remotes/origin/*',
-                                                                       url          : 'https://github.com/FenixIntl/FenixGoNative.git']]])
+                                                                       url          : 'https://github.com/christoandrew/guess-it.git']]])
 
 
                         sh 'git submodule update --init'
