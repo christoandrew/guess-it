@@ -83,7 +83,7 @@ android {
         versionCode 12
         versionName getVersionName()
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        archivesBaseName = 'fenixGo'
+        archivesBaseName = 'FenixGO'
 
     }
     buildTypes {
