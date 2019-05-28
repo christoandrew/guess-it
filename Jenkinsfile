@@ -17,7 +17,7 @@ pipeline {
 
         choice(name: "BUILD_TYPE",
                 description: "SELECT BUILD TYPE",
-                choices: "debug\nrelease\ntrainDebug\ntrainRelease\n")
+                choices: "Debug\nRelease\ntrainDebug\ntrainRelease\n")
     }
 
     stages {
@@ -61,6 +61,26 @@ pipeline {
             }
         }
 
+        stage('Stage Run Lint') {
+            steps {
+                script {
+                    androidLint canRunOnFailed: true, defaultEncoding: 'UTF-8', healthy: '',
+                            pattern: 'report/lint-results.xml', shouldDetectModules: true,
+                            unHealthy: '', useDeltaValues: true,
+                            usePreviousBuildAsReference: true,
+                            useStableBuildAsReference: true
+                }
+            }
+        }
+
+        stage("Stage Testing"){
+            steps{
+                script{
+                    sh "./gradlew testDebugUnitTest --stacktrace"
+                }
+            }
+        }
+
         stage('Stage Build') {
             steps {
                 script {
@@ -72,16 +92,11 @@ pipeline {
             }
         }
 
-        stage("Stage Test") {
-            steps {
-                //sh './gradlew check'
-                print("Stage Test")
-            }
-        }
-
         stage('Stage Archive') {
             steps {
                 archiveArtifacts artifacts: 'app/build/outputs/apk/**/*.apk', fingerprint: true
+                archiveArtifacts artifacts: 'app/build/reports/lint-results.*', fingerprint: true
+                //archiveArtifacts artifacts: 'app/build/test-results/lint-results.*', fingerprint: true
             }
         }
 
